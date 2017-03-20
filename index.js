@@ -25,19 +25,28 @@ class ServerlessApiGatewayAuthPlugin {
     this.options = options;
 
     this.hooks = {
-      'deploy:compileEvents': this._compileEvents.bind(this)
+      'deploy:compileEvents': this.compileEvents.bind(this)
     };
   }
 
+  /**
+   *
+   * @param {string} path
+   */
   _capitalizeAlphaNumericPath(path) {
     path = path.toLowerCase();
-    path = path.charAt(0).toUpperCase() + path.slice(1);
+    const firstCharIndex = (path.match(/[a-z]/i) || { index: -1 }).index
+    if (firstCharIndex !== -1) {
+      path = path.substr(0, firstCharIndex) +
+        path.charAt(firstCharIndex).toUpperCase() +
+        path.substr(firstCharIndex + 1)
+    }
     return path.replace(/-/g, 'Dash')
       .replace(/\{(.*)\}/g, '$1Var')
       .replace(/[^0-9A-Za-z]/g, '');
   }
 
-  _compileEvents() {
+  compileEvents() {
     const tmp = this.serverless.service.provider.compiledCloudFormationTemplate;
     const resources = tmp.Resources;
 
